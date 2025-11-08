@@ -1,23 +1,21 @@
-import { initializeApp } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
-import { getStorage } from 'firebase/storage'
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
-// TODO: Replace with your actual Firebase configuration
-// Get this from Firebase Console > Project Settings > General > Your apps
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-api-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "demo-project.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo-project",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "demo-project.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abcdef123456"
-}
+  apiKey: "AIzaSyDRSWb8iNFZtS19kM4221KyXwJPOoHIf8g",
+  authDomain: "holiday-pachinko.firebaseapp.com",
+  projectId: "holiday-pachinko",
+  storageBucket: "holiday-pachinko.firebasestorage.app",
+  messagingSenderId: "995852540189",
+  appId: "1:995852540189:web:bb0cce3c63c727437d29f4"
+};
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig)
+const app = initializeApp(firebaseConfig);
 
-// Initialize services
-export const db = getFirestore(app)
-export const storage = getStorage(app)
-
-export default app
+// Initialize Firebase services
+export const db = getFirestore(app);
+export const storage = getStorage(app);
