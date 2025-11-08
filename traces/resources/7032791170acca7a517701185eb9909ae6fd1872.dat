@@ -1,0 +1,308 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/PlayerForm.jsx");import __vite__cjsImport0_react_jsxDevRuntime from "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=3967a18f"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+var _s = $RefreshSig$();
+import __vite__cjsImport1_react from "/node_modules/.vite/deps/react.js?v=3967a18f"; const useState = __vite__cjsImport1_react["useState"]; const useEffect = __vite__cjsImport1_react["useEffect"];
+import { useForm } from "/node_modules/.vite/deps/react-hook-form.js?v=3967a18f";
+import { zodResolver } from "/node_modules/.vite/deps/@hookform_resolvers_zod.js?v=3967a18f";
+import { useMutation } from "/node_modules/.vite/deps/@tanstack_react-query.js?v=3967a18f";
+import { toast } from "/node_modules/.vite/deps/sonner.js?v=3967a18f";
+import { playerFormSchema } from "/src/lib/validations/playerFormSchema.js";
+import { createPlayer } from "/src/services/playerService.js";
+import { Button } from "/src/components/ui/button.jsx";
+import { Input } from "/src/components/ui/input.jsx";
+import { Label } from "/src/components/ui/label.jsx";
+import { Card, CardContent, CardHeader, CardTitle } from "/src/components/ui/card.jsx";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "/src/components/ui/form.jsx";
+export function PlayerForm() {
+  _s();
+  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const form = useForm({
+    resolver: zodResolver(playerFormSchema),
+    mode: "onBlur",
+    defaultValues: {
+      playerName: "",
+      playerImage: null
+    }
+  });
+  const mutation = useMutation({
+    mutationFn: createPlayer,
+    onSuccess: () => {
+      toast.success("Player added successfully!");
+      resetForm();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create player. Please try again.");
+    }
+  });
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      form.setValue("playerImage", file, { shouldValidate: true });
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
+  };
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    form.setValue("playerImage", null);
+    const fileInput = document.getElementById("playerImage");
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+  const resetForm = () => {
+    form.reset();
+    setSelectedFile(null);
+    setImagePreview(null);
+    const fileInput = document.getElementById("playerImage");
+    if (fileInput) {
+      fileInput.value = "";
+    }
+  };
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+  const onSubmit = async (data) => {
+    mutation.mutate({
+      name: data.playerName,
+      imageFile: selectedFile
+    });
+  };
+  return /* @__PURE__ */ jsxDEV(Card, { className: "w-full max-w-md mx-auto", children: [
+    /* @__PURE__ */ jsxDEV(CardHeader, { children: /* @__PURE__ */ jsxDEV(CardTitle, { children: "Add New Player" }, void 0, false, {
+      fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+      lineNumber: 100,
+      columnNumber: 9
+    }, this) }, void 0, false, {
+      fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+      lineNumber: 99,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(CardContent, { children: /* @__PURE__ */ jsxDEV(Form, { ...form, children: /* @__PURE__ */ jsxDEV("form", { onSubmit: form.handleSubmit(onSubmit), className: "space-y-6", children: [
+      /* @__PURE__ */ jsxDEV(
+        FormField,
+        {
+          control: form.control,
+          name: "playerName",
+          render: ({ field }) => /* @__PURE__ */ jsxDEV(FormItem, { children: [
+            /* @__PURE__ */ jsxDEV(FormLabel, { children: "Player Name" }, void 0, false, {
+              fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+              lineNumber: 111,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV(FormControl, { children: /* @__PURE__ */ jsxDEV(
+              Input,
+              {
+                ...field,
+                type: "text",
+                placeholder: "Enter player name",
+                "aria-describedby": "playerName-error",
+                "aria-invalid": !!form.formState.errors.playerName
+              },
+              void 0,
+              false,
+              {
+                fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+                lineNumber: 113,
+                columnNumber: 21
+              },
+              this
+            ) }, void 0, false, {
+              fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+              lineNumber: 112,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV(FormMessage, { id: "playerName-error" }, void 0, false, {
+              fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+              lineNumber: 121,
+              columnNumber: 19
+            }, this)
+          ] }, void 0, true, {
+            fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+            lineNumber: 110,
+            columnNumber: 15
+          }, this)
+        },
+        void 0,
+        false,
+        {
+          fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+          lineNumber: 106,
+          columnNumber: 13
+        },
+        this
+      ),
+      /* @__PURE__ */ jsxDEV(
+        FormField,
+        {
+          control: form.control,
+          name: "playerImage",
+          render: ({ field: { value, onChange, ...field } }) => /* @__PURE__ */ jsxDEV(FormItem, { children: [
+            /* @__PURE__ */ jsxDEV(FormLabel, { children: "Player Image" }, void 0, false, {
+              fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+              lineNumber: 132,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV(FormControl, { children: /* @__PURE__ */ jsxDEV(
+              Input,
+              {
+                ...field,
+                id: "playerImage",
+                type: "file",
+                accept: "image/jpeg,image/png,image/webp",
+                onChange: handleFileChange,
+                "aria-describedby": "playerImage-error",
+                "aria-invalid": !!form.formState.errors.playerImage
+              },
+              void 0,
+              false,
+              {
+                fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+                lineNumber: 134,
+                columnNumber: 21
+              },
+              this
+            ) }, void 0, false, {
+              fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+              lineNumber: 133,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV(FormMessage, { id: "playerImage-error" }, void 0, false, {
+              fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+              lineNumber: 144,
+              columnNumber: 19
+            }, this)
+          ] }, void 0, true, {
+            fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+            lineNumber: 131,
+            columnNumber: 15
+          }, this)
+        },
+        void 0,
+        false,
+        {
+          fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+          lineNumber: 127,
+          columnNumber: 13
+        },
+        this
+      ),
+      imagePreview && selectedFile && /* @__PURE__ */ jsxDEV("div", { className: "space-y-2 p-4 border rounded-md", children: [
+        /* @__PURE__ */ jsxDEV(
+          "img",
+          {
+            src: imagePreview,
+            alt: `Preview of ${selectedFile.name}`,
+            className: "w-[200px] h-[200px] object-cover rounded-md mx-auto"
+          },
+          void 0,
+          false,
+          {
+            fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+            lineNumber: 152,
+            columnNumber: 17
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV("p", { className: "text-sm text-center text-muted-foreground truncate", children: selectedFile.name }, void 0, false, {
+          fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+          lineNumber: 157,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV(
+          Button,
+          {
+            type: "button",
+            variant: "outline",
+            onClick: handleRemoveImage,
+            className: "w-full",
+            children: "Remove"
+          },
+          void 0,
+          false,
+          {
+            fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+            lineNumber: 160,
+            columnNumber: 17
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+        lineNumber: 151,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV(
+        Button,
+        {
+          type: "submit",
+          className: "w-full",
+          disabled: mutation.isPending || !form.formState.isValid,
+          "aria-busy": mutation.isPending,
+          children: mutation.isPending ? "Adding Player..." : "Add Player"
+        },
+        void 0,
+        false,
+        {
+          fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+          lineNumber: 172,
+          columnNumber: 13
+        },
+        this
+      )
+    ] }, void 0, true, {
+      fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+      lineNumber: 104,
+      columnNumber: 11
+    }, this) }, void 0, false, {
+      fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+      lineNumber: 103,
+      columnNumber: 9
+    }, this) }, void 0, false, {
+      fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+      lineNumber: 102,
+      columnNumber: 7
+    }, this)
+  ] }, void 0, true, {
+    fileName: "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx",
+    lineNumber: 98,
+    columnNumber: 5
+  }, this);
+}
+_s(PlayerForm, "XkgWPrQFki76XhjUnu7kuOjA4Sc=", false, function() {
+  return [useForm, useMutation];
+});
+_c = PlayerForm;
+var _c;
+$RefreshReg$(_c, "PlayerForm");
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) {
+  return RefreshRuntime.register(type, "/Users/bryanlewis/Dropbox/WIP (in Dropbox)/Holiday Pachinko/admin-panel/src/components/PlayerForm.jsx " + id);
+}
+function $RefreshSig$() {
+  return RefreshRuntime.createSignatureFunctionForTransform();
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJtYXBwaW5ncyI6IkFBbUdROztBQW5HUixTQUFTQSxVQUFVQyxpQkFBaUI7QUFDcEMsU0FBU0MsZUFBZTtBQUN4QixTQUFTQyxtQkFBbUI7QUFDNUIsU0FBU0MsbUJBQW1CO0FBQzVCLFNBQVNDLGFBQWE7QUFDdEIsU0FBU0Msd0JBQXdCO0FBQ2pDLFNBQVNDLG9CQUFvQjtBQUM3QixTQUFTQyxjQUFjO0FBQ3ZCLFNBQVNDLGFBQWE7QUFDdEIsU0FBU0MsYUFBYTtBQUN0QixTQUFTQyxNQUFNQyxhQUFhQyxZQUFZQyxpQkFBaUI7QUFDekQsU0FBU0MsTUFBTUMsYUFBYUMsV0FBV0MsVUFBVUMsV0FBV0MsbUJBQW1CO0FBRXhFLGdCQUFTQyxhQUFhO0FBQUFDLEtBQUE7QUFDM0IsUUFBTSxDQUFDQyxjQUFjQyxlQUFlLElBQUl4QixTQUFTLElBQUk7QUFDckQsUUFBTSxDQUFDeUIsY0FBY0MsZUFBZSxJQUFJMUIsU0FBUyxJQUFJO0FBR3JELFFBQU0yQixPQUFPekIsUUFBUTtBQUFBLElBQ25CMEIsVUFBVXpCLFlBQVlHLGdCQUFnQjtBQUFBLElBQ3RDdUIsTUFBTTtBQUFBLElBQ05DLGVBQWU7QUFBQSxNQUNiQyxZQUFZO0FBQUEsTUFDWkMsYUFBYTtBQUFBLElBQ2Y7QUFBQSxFQUNGLENBQUM7QUFHRCxRQUFNQyxXQUFXN0IsWUFBWTtBQUFBLElBQzNCOEIsWUFBWTNCO0FBQUFBLElBQ1o0QixXQUFXQSxNQUFNO0FBQ2Y5QixZQUFNK0IsUUFBUSw0QkFBNEI7QUFDMUNDLGdCQUFVO0FBQUEsSUFDWjtBQUFBLElBQ0FDLFNBQVNBLENBQUNDLFVBQVU7QUFDbEJsQyxZQUFNa0MsTUFBTUEsTUFBTUMsV0FBVyw0Q0FBNEM7QUFBQSxJQUMzRTtBQUFBLEVBQ0YsQ0FBQztBQUdELFFBQU1DLG1CQUFtQkEsQ0FBQ0MsVUFBVTtBQUNsQyxVQUFNQyxPQUFPRCxNQUFNRSxPQUFPQyxRQUFRLENBQUM7QUFFbkMsUUFBSUYsTUFBTTtBQUNSakIsc0JBQWdCaUIsSUFBSTtBQUNwQmhCLFdBQUttQixTQUFTLGVBQWVILE1BQU0sRUFBRUksZ0JBQWdCLEtBQUssQ0FBQztBQUczRCxZQUFNQyxhQUFhQyxJQUFJQyxnQkFBZ0JQLElBQUk7QUFDM0NuQixzQkFBZ0J3QixVQUFVO0FBQUEsSUFDNUI7QUFBQSxFQUNGO0FBR0EsUUFBTUcsb0JBQW9CQSxNQUFNO0FBQzlCekIsb0JBQWdCLElBQUk7QUFDcEJGLG9CQUFnQixJQUFJO0FBQ3BCRyxTQUFLbUIsU0FBUyxlQUFlLElBQUk7QUFHakMsVUFBTU0sWUFBWUMsU0FBU0MsZUFBZSxhQUFhO0FBQ3ZELFFBQUlGLFdBQVc7QUFDYkEsZ0JBQVVHLFFBQVE7QUFBQSxJQUNwQjtBQUFBLEVBQ0Y7QUFHQSxRQUFNbEIsWUFBWUEsTUFBTTtBQUN0QlYsU0FBSzZCLE1BQU07QUFDWDlCLG9CQUFnQixJQUFJO0FBQ3BCRixvQkFBZ0IsSUFBSTtBQUdwQixVQUFNNEIsWUFBWUMsU0FBU0MsZUFBZSxhQUFhO0FBQ3ZELFFBQUlGLFdBQVc7QUFDYkEsZ0JBQVVHLFFBQVE7QUFBQSxJQUNwQjtBQUFBLEVBQ0Y7QUFHQXRELFlBQVUsTUFBTTtBQUNkLFdBQU8sTUFBTTtBQUNYLFVBQUlzQixjQUFjO0FBQ2hCMEIsWUFBSVEsZ0JBQWdCbEMsWUFBWTtBQUFBLE1BQ2xDO0FBQUEsSUFDRjtBQUFBLEVBQ0YsR0FBRyxDQUFDQSxZQUFZLENBQUM7QUFHakIsUUFBTW1DLFdBQVcsT0FBT0MsU0FBUztBQUMvQjFCLGFBQVMyQixPQUFPO0FBQUEsTUFDZEMsTUFBTUYsS0FBSzVCO0FBQUFBLE1BQ1grQixXQUFXckM7QUFBQUEsSUFDYixDQUFDO0FBQUEsRUFDSDtBQUVBLFNBQ0UsdUJBQUMsUUFBSyxXQUFVLDJCQUNkO0FBQUEsMkJBQUMsY0FDQyxpQ0FBQyxhQUFVLDhCQUFYO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FBeUIsS0FEM0I7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQUVBO0FBQUEsSUFDQSx1QkFBQyxlQUNDLGlDQUFDLFFBQUssR0FBSUUsTUFDUixpQ0FBQyxVQUFLLFVBQVVBLEtBQUtvQyxhQUFhTCxRQUFRLEdBQUcsV0FBVSxhQUVyRDtBQUFBO0FBQUEsUUFBQztBQUFBO0FBQUEsVUFDQyxTQUFTL0IsS0FBS3FDO0FBQUFBLFVBQ2QsTUFBSztBQUFBLFVBQ0wsUUFBUSxDQUFDLEVBQUVDLE1BQU0sTUFDZix1QkFBQyxZQUNDO0FBQUEsbUNBQUMsYUFBVSwyQkFBWDtBQUFBO0FBQUE7QUFBQTtBQUFBLG1CQUFzQjtBQUFBLFlBQ3RCLHVCQUFDLGVBQ0M7QUFBQSxjQUFDO0FBQUE7QUFBQSxnQkFDQyxHQUFJQTtBQUFBQSxnQkFDSixNQUFLO0FBQUEsZ0JBQ0wsYUFBWTtBQUFBLGdCQUNaLG9CQUFpQjtBQUFBLGdCQUNqQixnQkFBYyxDQUFDLENBQUN0QyxLQUFLdUMsVUFBVUMsT0FBT3BDO0FBQUFBO0FBQUFBLGNBTHhDO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQSxZQUttRCxLQU5yRDtBQUFBO0FBQUE7QUFBQTtBQUFBLG1CQVFBO0FBQUEsWUFDQSx1QkFBQyxlQUFZLElBQUcsc0JBQWhCO0FBQUE7QUFBQTtBQUFBO0FBQUEsbUJBQWtDO0FBQUEsZUFYcEM7QUFBQTtBQUFBO0FBQUE7QUFBQSxpQkFZQTtBQUFBO0FBQUEsUUFoQko7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBLE1BaUJJO0FBQUEsTUFJSjtBQUFBLFFBQUM7QUFBQTtBQUFBLFVBQ0MsU0FBU0osS0FBS3FDO0FBQUFBLFVBQ2QsTUFBSztBQUFBLFVBQ0wsUUFBUSxDQUFDLEVBQUVDLE9BQU8sRUFBRVYsT0FBT2EsVUFBVSxHQUFHSCxNQUFNLEVBQUUsTUFDOUMsdUJBQUMsWUFDQztBQUFBLG1DQUFDLGFBQVUsNEJBQVg7QUFBQTtBQUFBO0FBQUE7QUFBQSxtQkFBdUI7QUFBQSxZQUN2Qix1QkFBQyxlQUNDO0FBQUEsY0FBQztBQUFBO0FBQUEsZ0JBQ0MsR0FBSUE7QUFBQUEsZ0JBQ0osSUFBRztBQUFBLGdCQUNILE1BQUs7QUFBQSxnQkFDTCxRQUFPO0FBQUEsZ0JBQ1AsVUFBVXhCO0FBQUFBLGdCQUNWLG9CQUFpQjtBQUFBLGdCQUNqQixnQkFBYyxDQUFDLENBQUNkLEtBQUt1QyxVQUFVQyxPQUFPbkM7QUFBQUE7QUFBQUEsY0FQeEM7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBLFlBT29ELEtBUnREO0FBQUE7QUFBQTtBQUFBO0FBQUEsbUJBVUE7QUFBQSxZQUNBLHVCQUFDLGVBQVksSUFBRyx1QkFBaEI7QUFBQTtBQUFBO0FBQUE7QUFBQSxtQkFBbUM7QUFBQSxlQWJyQztBQUFBO0FBQUE7QUFBQTtBQUFBLGlCQWNBO0FBQUE7QUFBQSxRQWxCSjtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUEsTUFtQkk7QUFBQSxNQUlIVCxnQkFBZ0JFLGdCQUNmLHVCQUFDLFNBQUksV0FBVSxtQ0FDYjtBQUFBO0FBQUEsVUFBQztBQUFBO0FBQUEsWUFDQyxLQUFLRjtBQUFBQSxZQUNMLEtBQUssY0FBY0UsYUFBYW9DLElBQUk7QUFBQSxZQUNwQyxXQUFVO0FBQUE7QUFBQSxVQUhaO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQSxRQUdpRTtBQUFBLFFBRWpFLHVCQUFDLE9BQUUsV0FBVSxzREFDVnBDLHVCQUFhb0MsUUFEaEI7QUFBQTtBQUFBO0FBQUE7QUFBQSxlQUVBO0FBQUEsUUFDQTtBQUFBLFVBQUM7QUFBQTtBQUFBLFlBQ0MsTUFBSztBQUFBLFlBQ0wsU0FBUTtBQUFBLFlBQ1IsU0FBU1Y7QUFBQUEsWUFDVCxXQUFVO0FBQUEsWUFBUTtBQUFBO0FBQUEsVUFKcEI7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBLFFBT0E7QUFBQSxXQWhCRjtBQUFBO0FBQUE7QUFBQTtBQUFBLGFBaUJBO0FBQUEsTUFJRjtBQUFBLFFBQUM7QUFBQTtBQUFBLFVBQ0MsTUFBSztBQUFBLFVBQ0wsV0FBVTtBQUFBLFVBQ1YsVUFBVWxCLFNBQVNvQyxhQUFhLENBQUMxQyxLQUFLdUMsVUFBVUk7QUFBQUEsVUFDaEQsYUFBV3JDLFNBQVNvQztBQUFBQSxVQUVuQnBDLG1CQUFTb0MsWUFBWSxxQkFBcUI7QUFBQTtBQUFBLFFBTjdDO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQSxNQU9BO0FBQUEsU0EzRUY7QUFBQTtBQUFBO0FBQUE7QUFBQSxXQTRFQSxLQTdFRjtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBOEVBLEtBL0VGO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0FnRkE7QUFBQSxPQXBGRjtBQUFBO0FBQUE7QUFBQTtBQUFBLFNBcUZBO0FBRUo7QUFBQy9DLEdBM0tlRCxZQUFVO0FBQUEsVUFLWG5CLFNBVUlFLFdBQVc7QUFBQTtBQUFBbUUsS0FmZGxEO0FBQVUsSUFBQWtEO0FBQUFDLGFBQUFELElBQUEiLCJuYW1lcyI6WyJ1c2VTdGF0ZSIsInVzZUVmZmVjdCIsInVzZUZvcm0iLCJ6b2RSZXNvbHZlciIsInVzZU11dGF0aW9uIiwidG9hc3QiLCJwbGF5ZXJGb3JtU2NoZW1hIiwiY3JlYXRlUGxheWVyIiwiQnV0dG9uIiwiSW5wdXQiLCJMYWJlbCIsIkNhcmQiLCJDYXJkQ29udGVudCIsIkNhcmRIZWFkZXIiLCJDYXJkVGl0bGUiLCJGb3JtIiwiRm9ybUNvbnRyb2wiLCJGb3JtRmllbGQiLCJGb3JtSXRlbSIsIkZvcm1MYWJlbCIsIkZvcm1NZXNzYWdlIiwiUGxheWVyRm9ybSIsIl9zIiwiaW1hZ2VQcmV2aWV3Iiwic2V0SW1hZ2VQcmV2aWV3Iiwic2VsZWN0ZWRGaWxlIiwic2V0U2VsZWN0ZWRGaWxlIiwiZm9ybSIsInJlc29sdmVyIiwibW9kZSIsImRlZmF1bHRWYWx1ZXMiLCJwbGF5ZXJOYW1lIiwicGxheWVySW1hZ2UiLCJtdXRhdGlvbiIsIm11dGF0aW9uRm4iLCJvblN1Y2Nlc3MiLCJzdWNjZXNzIiwicmVzZXRGb3JtIiwib25FcnJvciIsImVycm9yIiwibWVzc2FnZSIsImhhbmRsZUZpbGVDaGFuZ2UiLCJldmVudCIsImZpbGUiLCJ0YXJnZXQiLCJmaWxlcyIsInNldFZhbHVlIiwic2hvdWxkVmFsaWRhdGUiLCJwcmV2aWV3VXJsIiwiVVJMIiwiY3JlYXRlT2JqZWN0VVJMIiwiaGFuZGxlUmVtb3ZlSW1hZ2UiLCJmaWxlSW5wdXQiLCJkb2N1bWVudCIsImdldEVsZW1lbnRCeUlkIiwidmFsdWUiLCJyZXNldCIsInJldm9rZU9iamVjdFVSTCIsIm9uU3VibWl0IiwiZGF0YSIsIm11dGF0ZSIsIm5hbWUiLCJpbWFnZUZpbGUiLCJoYW5kbGVTdWJtaXQiLCJjb250cm9sIiwiZmllbGQiLCJmb3JtU3RhdGUiLCJlcnJvcnMiLCJvbkNoYW5nZSIsImlzUGVuZGluZyIsImlzVmFsaWQiLCJfYyIsIiRSZWZyZXNoUmVnJCJdLCJpZ25vcmVMaXN0IjpbXSwic291cmNlcyI6WyJQbGF5ZXJGb3JtLmpzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyB1c2VTdGF0ZSwgdXNlRWZmZWN0IH0gZnJvbSAncmVhY3QnXG5pbXBvcnQgeyB1c2VGb3JtIH0gZnJvbSAncmVhY3QtaG9vay1mb3JtJ1xuaW1wb3J0IHsgem9kUmVzb2x2ZXIgfSBmcm9tICdAaG9va2Zvcm0vcmVzb2x2ZXJzL3pvZCdcbmltcG9ydCB7IHVzZU11dGF0aW9uIH0gZnJvbSAnQHRhbnN0YWNrL3JlYWN0LXF1ZXJ5J1xuaW1wb3J0IHsgdG9hc3QgfSBmcm9tICdzb25uZXInXG5pbXBvcnQgeyBwbGF5ZXJGb3JtU2NoZW1hIH0gZnJvbSAnLi4vbGliL3ZhbGlkYXRpb25zL3BsYXllckZvcm1TY2hlbWEnXG5pbXBvcnQgeyBjcmVhdGVQbGF5ZXIgfSBmcm9tICcuLi9zZXJ2aWNlcy9wbGF5ZXJTZXJ2aWNlJ1xuaW1wb3J0IHsgQnV0dG9uIH0gZnJvbSAnLi91aS9idXR0b24nXG5pbXBvcnQgeyBJbnB1dCB9IGZyb20gJy4vdWkvaW5wdXQnXG5pbXBvcnQgeyBMYWJlbCB9IGZyb20gJy4vdWkvbGFiZWwnXG5pbXBvcnQgeyBDYXJkLCBDYXJkQ29udGVudCwgQ2FyZEhlYWRlciwgQ2FyZFRpdGxlIH0gZnJvbSAnLi91aS9jYXJkJ1xuaW1wb3J0IHsgRm9ybSwgRm9ybUNvbnRyb2wsIEZvcm1GaWVsZCwgRm9ybUl0ZW0sIEZvcm1MYWJlbCwgRm9ybU1lc3NhZ2UgfSBmcm9tICcuL3VpL2Zvcm0nXG5cbmV4cG9ydCBmdW5jdGlvbiBQbGF5ZXJGb3JtKCkge1xuICBjb25zdCBbaW1hZ2VQcmV2aWV3LCBzZXRJbWFnZVByZXZpZXddID0gdXNlU3RhdGUobnVsbClcbiAgY29uc3QgW3NlbGVjdGVkRmlsZSwgc2V0U2VsZWN0ZWRGaWxlXSA9IHVzZVN0YXRlKG51bGwpXG5cbiAgLy8gSW5pdGlhbGl6ZSBmb3JtIHdpdGggcmVhY3QtaG9vay1mb3JtIGFuZCBab2QgdmFsaWRhdGlvblxuICBjb25zdCBmb3JtID0gdXNlRm9ybSh7XG4gICAgcmVzb2x2ZXI6IHpvZFJlc29sdmVyKHBsYXllckZvcm1TY2hlbWEpLFxuICAgIG1vZGU6ICdvbkJsdXInLFxuICAgIGRlZmF1bHRWYWx1ZXM6IHtcbiAgICAgIHBsYXllck5hbWU6ICcnLFxuICAgICAgcGxheWVySW1hZ2U6IG51bGwsXG4gICAgfSxcbiAgfSlcblxuICAvLyBUYW5TdGFjayBRdWVyeSBtdXRhdGlvbiBmb3IgZm9ybSBzdWJtaXNzaW9uXG4gIGNvbnN0IG11dGF0aW9uID0gdXNlTXV0YXRpb24oe1xuICAgIG11dGF0aW9uRm46IGNyZWF0ZVBsYXllcixcbiAgICBvblN1Y2Nlc3M6ICgpID0+IHtcbiAgICAgIHRvYXN0LnN1Y2Nlc3MoJ1BsYXllciBhZGRlZCBzdWNjZXNzZnVsbHkhJylcbiAgICAgIHJlc2V0Rm9ybSgpXG4gICAgfSxcbiAgICBvbkVycm9yOiAoZXJyb3IpID0+IHtcbiAgICAgIHRvYXN0LmVycm9yKGVycm9yLm1lc3NhZ2UgfHwgJ0ZhaWxlZCB0byBjcmVhdGUgcGxheWVyLiBQbGVhc2UgdHJ5IGFnYWluLicpXG4gICAgfSxcbiAgfSlcblxuICAvLyBIYW5kbGUgZmlsZSBzZWxlY3Rpb25cbiAgY29uc3QgaGFuZGxlRmlsZUNoYW5nZSA9IChldmVudCkgPT4ge1xuICAgIGNvbnN0IGZpbGUgPSBldmVudC50YXJnZXQuZmlsZXM/LlswXVxuXG4gICAgaWYgKGZpbGUpIHtcbiAgICAgIHNldFNlbGVjdGVkRmlsZShmaWxlKVxuICAgICAgZm9ybS5zZXRWYWx1ZSgncGxheWVySW1hZ2UnLCBmaWxlLCB7IHNob3VsZFZhbGlkYXRlOiB0cnVlIH0pXG5cbiAgICAgIC8vIENyZWF0ZSBwcmV2aWV3IFVSTFxuICAgICAgY29uc3QgcHJldmlld1VybCA9IFVSTC5jcmVhdGVPYmplY3RVUkwoZmlsZSlcbiAgICAgIHNldEltYWdlUHJldmlldyhwcmV2aWV3VXJsKVxuICAgIH1cbiAgfVxuXG4gIC8vIEhhbmRsZSByZW1vdmUgaW1hZ2VcbiAgY29uc3QgaGFuZGxlUmVtb3ZlSW1hZ2UgPSAoKSA9PiB7XG4gICAgc2V0U2VsZWN0ZWRGaWxlKG51bGwpXG4gICAgc2V0SW1hZ2VQcmV2aWV3KG51bGwpXG4gICAgZm9ybS5zZXRWYWx1ZSgncGxheWVySW1hZ2UnLCBudWxsKVxuXG4gICAgLy8gUmVzZXQgZmlsZSBpbnB1dFxuICAgIGNvbnN0IGZpbGVJbnB1dCA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdwbGF5ZXJJbWFnZScpXG4gICAgaWYgKGZpbGVJbnB1dCkge1xuICAgICAgZmlsZUlucHV0LnZhbHVlID0gJydcbiAgICB9XG4gIH1cblxuICAvLyBSZXNldCBmb3JtIHRvIHByaXN0aW5lIHN0YXRlXG4gIGNvbnN0IHJlc2V0Rm9ybSA9ICgpID0+IHtcbiAgICBmb3JtLnJlc2V0KClcbiAgICBzZXRTZWxlY3RlZEZpbGUobnVsbClcbiAgICBzZXRJbWFnZVByZXZpZXcobnVsbClcblxuICAgIC8vIFJlc2V0IGZpbGUgaW5wdXRcbiAgICBjb25zdCBmaWxlSW5wdXQgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncGxheWVySW1hZ2UnKVxuICAgIGlmIChmaWxlSW5wdXQpIHtcbiAgICAgIGZpbGVJbnB1dC52YWx1ZSA9ICcnXG4gICAgfVxuICB9XG5cbiAgLy8gQ2xlYW51cCBvYmplY3QgVVJMcyBvbiB1bm1vdW50XG4gIHVzZUVmZmVjdCgoKSA9PiB7XG4gICAgcmV0dXJuICgpID0+IHtcbiAgICAgIGlmIChpbWFnZVByZXZpZXcpIHtcbiAgICAgICAgVVJMLnJldm9rZU9iamVjdFVSTChpbWFnZVByZXZpZXcpXG4gICAgICB9XG4gICAgfVxuICB9LCBbaW1hZ2VQcmV2aWV3XSlcblxuICAvLyBGb3JtIHN1Ym1pdCBoYW5kbGVyXG4gIGNvbnN0IG9uU3VibWl0ID0gYXN5bmMgKGRhdGEpID0+IHtcbiAgICBtdXRhdGlvbi5tdXRhdGUoe1xuICAgICAgbmFtZTogZGF0YS5wbGF5ZXJOYW1lLFxuICAgICAgaW1hZ2VGaWxlOiBzZWxlY3RlZEZpbGUsXG4gICAgfSlcbiAgfVxuXG4gIHJldHVybiAoXG4gICAgPENhcmQgY2xhc3NOYW1lPVwidy1mdWxsIG1heC13LW1kIG14LWF1dG9cIj5cbiAgICAgIDxDYXJkSGVhZGVyPlxuICAgICAgICA8Q2FyZFRpdGxlPkFkZCBOZXcgUGxheWVyPC9DYXJkVGl0bGU+XG4gICAgICA8L0NhcmRIZWFkZXI+XG4gICAgICA8Q2FyZENvbnRlbnQ+XG4gICAgICAgIDxGb3JtIHsuLi5mb3JtfT5cbiAgICAgICAgICA8Zm9ybSBvblN1Ym1pdD17Zm9ybS5oYW5kbGVTdWJtaXQob25TdWJtaXQpfSBjbGFzc05hbWU9XCJzcGFjZS15LTZcIj5cbiAgICAgICAgICAgIHsvKiBQbGF5ZXIgTmFtZSBGaWVsZCAqL31cbiAgICAgICAgICAgIDxGb3JtRmllbGRcbiAgICAgICAgICAgICAgY29udHJvbD17Zm9ybS5jb250cm9sfVxuICAgICAgICAgICAgICBuYW1lPVwicGxheWVyTmFtZVwiXG4gICAgICAgICAgICAgIHJlbmRlcj17KHsgZmllbGQgfSkgPT4gKFxuICAgICAgICAgICAgICAgIDxGb3JtSXRlbT5cbiAgICAgICAgICAgICAgICAgIDxGb3JtTGFiZWw+UGxheWVyIE5hbWU8L0Zvcm1MYWJlbD5cbiAgICAgICAgICAgICAgICAgIDxGb3JtQ29udHJvbD5cbiAgICAgICAgICAgICAgICAgICAgPElucHV0XG4gICAgICAgICAgICAgICAgICAgICAgey4uLmZpZWxkfVxuICAgICAgICAgICAgICAgICAgICAgIHR5cGU9XCJ0ZXh0XCJcbiAgICAgICAgICAgICAgICAgICAgICBwbGFjZWhvbGRlcj1cIkVudGVyIHBsYXllciBuYW1lXCJcbiAgICAgICAgICAgICAgICAgICAgICBhcmlhLWRlc2NyaWJlZGJ5PVwicGxheWVyTmFtZS1lcnJvclwiXG4gICAgICAgICAgICAgICAgICAgICAgYXJpYS1pbnZhbGlkPXshIWZvcm0uZm9ybVN0YXRlLmVycm9ycy5wbGF5ZXJOYW1lfVxuICAgICAgICAgICAgICAgICAgICAvPlxuICAgICAgICAgICAgICAgICAgPC9Gb3JtQ29udHJvbD5cbiAgICAgICAgICAgICAgICAgIDxGb3JtTWVzc2FnZSBpZD1cInBsYXllck5hbWUtZXJyb3JcIiAvPlxuICAgICAgICAgICAgICAgIDwvRm9ybUl0ZW0+XG4gICAgICAgICAgICAgICl9XG4gICAgICAgICAgICAvPlxuXG4gICAgICAgICAgICB7LyogUGxheWVyIEltYWdlIEZpZWxkICovfVxuICAgICAgICAgICAgPEZvcm1GaWVsZFxuICAgICAgICAgICAgICBjb250cm9sPXtmb3JtLmNvbnRyb2x9XG4gICAgICAgICAgICAgIG5hbWU9XCJwbGF5ZXJJbWFnZVwiXG4gICAgICAgICAgICAgIHJlbmRlcj17KHsgZmllbGQ6IHsgdmFsdWUsIG9uQ2hhbmdlLCAuLi5maWVsZCB9IH0pID0+IChcbiAgICAgICAgICAgICAgICA8Rm9ybUl0ZW0+XG4gICAgICAgICAgICAgICAgICA8Rm9ybUxhYmVsPlBsYXllciBJbWFnZTwvRm9ybUxhYmVsPlxuICAgICAgICAgICAgICAgICAgPEZvcm1Db250cm9sPlxuICAgICAgICAgICAgICAgICAgICA8SW5wdXRcbiAgICAgICAgICAgICAgICAgICAgICB7Li4uZmllbGR9XG4gICAgICAgICAgICAgICAgICAgICAgaWQ9XCJwbGF5ZXJJbWFnZVwiXG4gICAgICAgICAgICAgICAgICAgICAgdHlwZT1cImZpbGVcIlxuICAgICAgICAgICAgICAgICAgICAgIGFjY2VwdD1cImltYWdlL2pwZWcsaW1hZ2UvcG5nLGltYWdlL3dlYnBcIlxuICAgICAgICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXtoYW5kbGVGaWxlQ2hhbmdlfVxuICAgICAgICAgICAgICAgICAgICAgIGFyaWEtZGVzY3JpYmVkYnk9XCJwbGF5ZXJJbWFnZS1lcnJvclwiXG4gICAgICAgICAgICAgICAgICAgICAgYXJpYS1pbnZhbGlkPXshIWZvcm0uZm9ybVN0YXRlLmVycm9ycy5wbGF5ZXJJbWFnZX1cbiAgICAgICAgICAgICAgICAgICAgLz5cbiAgICAgICAgICAgICAgICAgIDwvRm9ybUNvbnRyb2w+XG4gICAgICAgICAgICAgICAgICA8Rm9ybU1lc3NhZ2UgaWQ9XCJwbGF5ZXJJbWFnZS1lcnJvclwiIC8+XG4gICAgICAgICAgICAgICAgPC9Gb3JtSXRlbT5cbiAgICAgICAgICAgICAgKX1cbiAgICAgICAgICAgIC8+XG5cbiAgICAgICAgICAgIHsvKiBJbWFnZSBQcmV2aWV3ICovfVxuICAgICAgICAgICAge2ltYWdlUHJldmlldyAmJiBzZWxlY3RlZEZpbGUgJiYgKFxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktMiBwLTQgYm9yZGVyIHJvdW5kZWQtbWRcIj5cbiAgICAgICAgICAgICAgICA8aW1nXG4gICAgICAgICAgICAgICAgICBzcmM9e2ltYWdlUHJldmlld31cbiAgICAgICAgICAgICAgICAgIGFsdD17YFByZXZpZXcgb2YgJHtzZWxlY3RlZEZpbGUubmFtZX1gfVxuICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1bMjAwcHhdIGgtWzIwMHB4XSBvYmplY3QtY292ZXIgcm91bmRlZC1tZCBteC1hdXRvXCJcbiAgICAgICAgICAgICAgICAvPlxuICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtc20gdGV4dC1jZW50ZXIgdGV4dC1tdXRlZC1mb3JlZ3JvdW5kIHRydW5jYXRlXCI+XG4gICAgICAgICAgICAgICAgICB7c2VsZWN0ZWRGaWxlLm5hbWV9XG4gICAgICAgICAgICAgICAgPC9wPlxuICAgICAgICAgICAgICAgIDxCdXR0b25cbiAgICAgICAgICAgICAgICAgIHR5cGU9XCJidXR0b25cIlxuICAgICAgICAgICAgICAgICAgdmFyaWFudD1cIm91dGxpbmVcIlxuICAgICAgICAgICAgICAgICAgb25DbGljaz17aGFuZGxlUmVtb3ZlSW1hZ2V9XG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJ3LWZ1bGxcIlxuICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgIFJlbW92ZVxuICAgICAgICAgICAgICAgIDwvQnV0dG9uPlxuICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICl9XG5cbiAgICAgICAgICAgIHsvKiBTdWJtaXQgQnV0dG9uICovfVxuICAgICAgICAgICAgPEJ1dHRvblxuICAgICAgICAgICAgICB0eXBlPVwic3VibWl0XCJcbiAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsXCJcbiAgICAgICAgICAgICAgZGlzYWJsZWQ9e211dGF0aW9uLmlzUGVuZGluZyB8fCAhZm9ybS5mb3JtU3RhdGUuaXNWYWxpZH1cbiAgICAgICAgICAgICAgYXJpYS1idXN5PXttdXRhdGlvbi5pc1BlbmRpbmd9XG4gICAgICAgICAgICA+XG4gICAgICAgICAgICAgIHttdXRhdGlvbi5pc1BlbmRpbmcgPyAnQWRkaW5nIFBsYXllci4uLicgOiAnQWRkIFBsYXllcid9XG4gICAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgICA8L2Zvcm0+XG4gICAgICAgIDwvRm9ybT5cbiAgICAgIDwvQ2FyZENvbnRlbnQ+XG4gICAgPC9DYXJkPlxuICApXG59XG4iXSwiZmlsZSI6Ii9Vc2Vycy9icnlhbmxld2lzL0Ryb3Bib3gvV0lQIChpbiBEcm9wYm94KS9Ib2xpZGF5IFBhY2hpbmtvL2FkbWluLXBhbmVsL3NyYy9jb21wb25lbnRzL1BsYXllckZvcm0uanN4In0=
