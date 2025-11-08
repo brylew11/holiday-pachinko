@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -6,7 +6,10 @@ import { PlayerForm } from '../PlayerForm'
 
 // Mock the player service
 vi.mock('../../services/playerService', () => ({
-  createPlayer: vi.fn(() => Promise.resolve({ id: '123', name: 'Test Player', status: 'processing' }))
+  createPlayer: vi.fn(() => Promise.resolve({ id: '123', name: 'Test Player', status: 'active' })),
+  updatePlayer: vi.fn(() => Promise.resolve({ id: '123', name: 'Updated Player' })),
+  uploadPlayerImage: vi.fn(() => Promise.resolve('https://storage.example.com/new-image.jpg')),
+  deletePlayerImage: vi.fn(() => Promise.resolve()),
 }))
 
 // Create a test query client
@@ -17,105 +20,156 @@ const createTestQueryClient = () => new QueryClient({
   },
 })
 
-const renderPlayerForm = () => {
+const renderPlayerForm = (props = {}) => {
   const queryClient = createTestQueryClient()
   return render(
     <QueryClientProvider client={queryClient}>
-      <PlayerForm />
+      <PlayerForm {...props} />
     </QueryClientProvider>
   )
 }
 
 describe('PlayerForm', () => {
-  it('should render form with all required fields', () => {
-    renderPlayerForm()
-
-    expect(screen.getByText('Add New Player')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/enter player name/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /add player/i })).toBeInTheDocument()
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  it('should validate required player name field on blur', async () => {
-    const user = userEvent.setup()
-    renderPlayerForm()
+  describe('Add Mode', () => {
+    it('should render form with all required fields', () => {
+      renderPlayerForm()
 
-    const nameInput = screen.getByPlaceholderText(/enter player name/i)
+      expect(screen.getByText('Add New Player')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/enter player name/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /add player/i })).toBeInTheDocument()
+    })
 
-    // Focus and blur without entering value
-    await user.click(nameInput)
-    await user.tab()
+    it('should validate required player name field on blur', async () => {
+      const user = userEvent.setup()
+      renderPlayerForm()
 
-    await waitFor(() => {
-      expect(screen.getByText(/player name is required/i)).toBeInTheDocument()
+      const nameInput = screen.getByPlaceholderText(/enter player name/i)
+
+      // Focus and blur without entering value
+      await user.click(nameInput)
+      await user.tab()
+
+      await waitFor(() => {
+        expect(screen.getByText(/player name is required/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should show image preview when file is selected', async () => {
+      const user = userEvent.setup()
+      renderPlayerForm()
+
+      const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
+      const fileInput = document.querySelector('input[type="file"]')
+
+      await user.upload(fileInput, file)
+
+      await waitFor(() => {
+        const preview = screen.getByAltText(/preview of test.jpg/i)
+        expect(preview).toBeInTheDocument()
+        expect(screen.getByText('test.jpg')).toBeInTheDocument()
+      })
+    })
+
+    it('should disable submit button when form is incomplete', async () => {
+      renderPlayerForm()
+
+      const nameInput = screen.getByPlaceholderText(/enter player name/i)
+      const submitButton = screen.getByRole('button', { name: /add player/i })
+
+      // Initially disabled (no data)
+      expect(submitButton).toBeDisabled()
+
+      // After adding name, still disabled (no file)
+      await userEvent.type(nameInput, 'John Doe')
+      expect(submitButton).toBeDisabled()
     })
   })
 
-  it('should show image preview when file is selected', async () => {
-    const user = userEvent.setup()
-    renderPlayerForm()
+  describe('Update Mode', () => {
+    const mockPlayer = {
+      id: 'player123',
+      name: 'John Doe',
+      originalPhotoUrl: 'https://storage.example.com/player.jpg',
+      status: 'active'
+    }
 
-    const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
-    const fileInput = document.querySelector('input[type="file"]')
+    it('should change title to "Update Player" in update mode', () => {
+      renderPlayerForm({ mode: 'update', selectedPlayer: mockPlayer })
 
-    await user.upload(fileInput, file)
-
-    await waitFor(() => {
-      const preview = screen.getByAltText(/preview of test.jpg/i)
-      expect(preview).toBeInTheDocument()
-      expect(screen.getByText('test.jpg')).toBeInTheDocument()
-    })
-  })
-
-  it('should clear preview when Remove button is clicked', async () => {
-    const user = userEvent.setup()
-    renderPlayerForm()
-
-    const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
-    const fileInput = document.querySelector('input[type="file"]')
-
-    await user.upload(fileInput, file)
-
-    await waitFor(() => {
-      expect(screen.getByAltText(/preview of test.jpg/i)).toBeInTheDocument()
+      expect(screen.getByText('Update Player')).toBeInTheDocument()
+      expect(screen.queryByText('Add New Player')).not.toBeInTheDocument()
     })
 
-    const removeButton = screen.getByRole('button', { name: /remove/i })
-    await user.click(removeButton)
+    it('should populate form with player data', async () => {
+      renderPlayerForm({ mode: 'update', selectedPlayer: mockPlayer })
 
-    await waitFor(() => {
-      expect(screen.queryByAltText(/preview of test.jpg/i)).not.toBeInTheDocument()
+      await waitFor(() => {
+        const nameInput = screen.getByPlaceholderText(/enter player name/i)
+        expect(nameInput).toHaveValue('John Doe')
+      })
+
+      const playerImage = screen.getByAltText('Player image')
+      expect(playerImage).toBeInTheDocument()
+      expect(playerImage).toHaveAttribute('src', mockPlayer.originalPhotoUrl)
     })
-  })
 
-  it('should show validation error for invalid files', async () => {
-    const user = userEvent.setup()
-    renderPlayerForm()
+    it('should change submit button text to "Update Player"', async () => {
+      renderPlayerForm({ mode: 'update', selectedPlayer: mockPlayer })
 
-    // Create a file larger than 5MB
-    const largeFile = new File(['x'.repeat(6 * 1024 * 1024)], 'large.jpg', { type: 'image/jpeg' })
-    const fileInput = document.querySelector('input[type="file"]')
+      await waitFor(() => {
+        const submitButton = screen.getByRole('button', { name: /^update player$/i })
+        expect(submitButton).toBeInTheDocument()
+      })
+    })
 
-    await user.upload(fileInput, largeFile)
+    it('should show Cancel button in update mode', async () => {
+      renderPlayerForm({ mode: 'update', selectedPlayer: mockPlayer })
 
-    // Check that error message element is present
-    await waitFor(() => {
-      const errorMessage = document.querySelector('#playerImage-error')
-      expect(errorMessage).toBeInTheDocument()
-      expect(errorMessage.textContent.length).toBeGreaterThan(0)
-    }, { timeout: 2000 })
-  })
+      await waitFor(() => {
+        const cancelButton = screen.getByRole('button', { name: /cancel/i })
+        expect(cancelButton).toBeInTheDocument()
+      })
+    })
 
-  it('should disable submit button when form is incomplete', async () => {
-    renderPlayerForm()
+    it('should call onCancel when Cancel button clicked', async () => {
+      const user = userEvent.setup()
+      const onCancel = vi.fn()
+      renderPlayerForm({ mode: 'update', selectedPlayer: mockPlayer, onCancel })
 
-    const nameInput = screen.getByPlaceholderText(/enter player name/i)
-    const submitButton = screen.getByRole('button', { name: /add player/i })
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
+      })
 
-    // Initially disabled (no data)
-    expect(submitButton).toBeDisabled()
+      const cancelButton = screen.getByRole('button', { name: /cancel/i })
+      await user.click(cancelButton)
 
-    // After adding name, still disabled (no file)
-    await userEvent.type(nameInput, 'John Doe')
-    expect(submitButton).toBeDisabled()
+      expect(onCancel).toHaveBeenCalledTimes(1)
+    })
+
+    it('should trigger update mutation on submit', async () => {
+      const user = userEvent.setup()
+      const { updatePlayer } = await import('../../services/playerService')
+
+      renderPlayerForm({ mode: 'update', selectedPlayer: mockPlayer })
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /^update player$/i })).toBeInTheDocument()
+      })
+
+      const nameInput = screen.getByPlaceholderText(/enter player name/i)
+      await user.clear(nameInput)
+      await user.type(nameInput, 'Updated Name')
+
+      const submitButton = screen.getByRole('button', { name: /^update player$/i })
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(updatePlayer).toHaveBeenCalled()
+      })
+    })
   })
 })

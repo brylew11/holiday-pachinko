@@ -7,7 +7,13 @@ import * as playerService from '../../services/playerService'
 
 // Mock the player service
 vi.mock('../../services/playerService', () => ({
-  createPlayer: vi.fn()
+  createPlayer: vi.fn(),
+  fetchPlayers: vi.fn(() => Promise.resolve([])),
+  updatePlayer: vi.fn(),
+  deactivatePlayer: vi.fn(),
+  deletePlayer: vi.fn(),
+  uploadPlayerImage: vi.fn(),
+  deletePlayerImage: vi.fn(),
 }))
 
 // Mock toast
@@ -18,6 +24,21 @@ vi.mock('sonner', () => ({
   },
   Toaster: () => null,
 }))
+
+// Mock matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+})
 
 const createTestQueryClient = () => new QueryClient({
   defaultOptions: {
@@ -38,6 +59,7 @@ const renderApp = () => {
 describe('Player Creation Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    playerService.fetchPlayers.mockResolvedValue([])
   })
 
   it('should complete full player creation workflow successfully', async () => {
@@ -48,7 +70,7 @@ describe('Player Creation Integration', () => {
       id: 'player-123',
       name: 'John Doe',
       originalPhotoUrl: 'https://storage.googleapis.com/test/uploads/123-photo.jpg',
-      status: 'processing'
+      status: 'active'
     })
 
     renderApp()
@@ -142,7 +164,7 @@ describe('Player Creation Integration', () => {
       id: 'player-456',
       name: 'Test Player',
       originalPhotoUrl: 'https://storage.googleapis.com/test/uploads/456-test.jpg',
-      status: 'processing'
+      status: 'active'
     })
 
     renderApp()
@@ -179,7 +201,7 @@ describe('Player Creation Integration', () => {
       new Promise(resolve => setTimeout(() => resolve({
         id: 'player-789',
         name: 'Slow Player',
-        status: 'processing'
+        status: 'active'
       }), 1000))
     )
 

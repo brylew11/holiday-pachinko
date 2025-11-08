@@ -1,5 +1,5 @@
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { collection, addDoc } from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { storage, db } from '../firebase'
 
 /**
@@ -43,7 +43,7 @@ export async function createPlayerDocument({ name, originalPhotoUrl }) {
     const docRef = await addDoc(playersCollection, {
       name,
       originalPhotoUrl,
-      status: 'processing'
+      status: 'active'
     })
 
     return docRef
@@ -72,7 +72,7 @@ export async function createPlayer({ name, imageFile }) {
       id: docRef.id,
       name,
       originalPhotoUrl,
-      status: 'processing'
+      status: 'active'
     }
   } catch (error) {
     // Re-throw with user-friendly message
@@ -83,5 +83,140 @@ export async function createPlayer({ name, imageFile }) {
     } else {
       throw new Error('An unexpected error occurred. Please try again.')
     }
+  }
+}
+
+/**
+ * Fetches all players from Firestore
+ * @returns {Promise<Array>} Array of player objects
+ */
+export async function fetchPlayers() {
+  try {
+    const playersCollection = collection(db, 'players')
+    const querySnapshot = await getDocs(playersCollection)
+
+    // Map Firestore document snapshots to plain JavaScript objects
+    const players = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      name: doc.data().name,
+      originalPhotoUrl: doc.data().originalPhotoUrl,
+      status: doc.data().status || 'active'
+    }))
+
+    return players
+  } catch (error) {
+    throw new Error('Unable to fetch players. Please check your connection and try again.')
+  }
+}
+
+/**
+ * Updates a player's name and/or photo
+ * @param {Object} params - Update parameters
+ * @param {string} params.playerId - Player document ID
+ * @param {string} params.name - New player name
+ * @param {string} params.originalPhotoUrl - New photo URL
+ * @returns {Promise<Object>} Updated player data
+ */
+export async function updatePlayer({ playerId, name, originalPhotoUrl }) {
+  try {
+    const docRef = doc(db, 'players', playerId)
+
+    const updateData = {}
+    if (name !== undefined) updateData.name = name
+    if (originalPhotoUrl !== undefined) updateData.originalPhotoUrl = originalPhotoUrl
+
+    await updateDoc(docRef, updateData)
+
+    return {
+      id: playerId,
+      ...updateData
+    }
+  } catch (error) {
+    throw new Error('Unable to update player. Please try again.')
+  }
+}
+
+/**
+ * Deactivates a player (soft delete)
+ * @param {string} playerId - Player document ID
+ * @returns {Promise<Object>} Updated player data
+ */
+export async function deactivatePlayer(playerId) {
+  try {
+    const docRef = doc(db, 'players', playerId)
+    await updateDoc(docRef, {
+      status: 'inactive'
+    })
+
+    return {
+      id: playerId,
+      status: 'inactive'
+    }
+  } catch (error) {
+    throw new Error('Unable to deactivate player. Please try again.')
+  }
+}
+
+/**
+ * Deletes a player image from Firebase Storage
+ * @param {string} imageUrl - Firebase Storage URL
+ * @returns {Promise<void>}
+ */
+export async function deletePlayerImage(imageUrl) {
+  try {
+    // Extract storage path from full URL
+    // URL format: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}?alt=media&token={token}
+    const url = new URL(imageUrl)
+    const pathMatch = url.pathname.match(/\/o\/(.+)$/)
+
+    if (!pathMatch) {
+      console.warn('Could not extract storage path from URL:', imageUrl)
+      return
+    }
+
+    const storagePath = decodeURIComponent(pathMatch[1])
+    const storageRef = ref(storage, storagePath)
+
+    await deleteObject(storageRef)
+  } catch (error) {
+    // Handle gracefully if image doesn't exist
+    if (error.code === 'storage/object-not-found') {
+      console.warn('Image not found in storage, skipping deletion:', imageUrl)
+      return
+    }
+    // Throw for other errors
+    throw new Error(`Failed to delete image: ${error.message}`)
+  }
+}
+
+/**
+ * Permanently deletes a player from Firestore and Storage
+ * @param {Object} params - Delete parameters
+ * @param {string} params.playerId - Player document ID
+ * @param {string} params.imageUrl - Player image URL
+ * @returns {Promise<Object>} Success confirmation
+ */
+export async function deletePlayer({ playerId, imageUrl }) {
+  try {
+    // First attempt to delete image
+    try {
+      if (imageUrl) {
+        await deletePlayerImage(imageUrl)
+      }
+    } catch (imageError) {
+      // Log warning but continue with document deletion
+      console.warn('Failed to delete player image, but will continue with document deletion:', imageError)
+    }
+
+    // Delete Firestore document
+    const docRef = doc(db, 'players', playerId)
+    await deleteDoc(docRef)
+
+    return {
+      success: true,
+      id: playerId
+    }
+  } catch (error) {
+    throw new Error('Unable to delete player. Please try again.')
   }
 }

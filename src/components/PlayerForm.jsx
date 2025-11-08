@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { playerFormSchema } from '../lib/validations/playerFormSchema'
-import { createPlayer } from '../services/playerService'
+import { createPlayer, updatePlayer, uploadPlayerImage, deletePlayerImage } from '../services/playerService'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { Label } from './ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 
-export function PlayerForm() {
+export function PlayerForm({ mode = 'add', selectedPlayer = null, onCancel, onUpdateSuccess }) {
   const [imagePreview, setImagePreview] = useState(null)
   const [selectedFile, setSelectedFile] = useState(null)
+  const [originalPhotoUrl, setOriginalPhotoUrl] = useState(null)
+  const queryClient = useQueryClient()
 
   // Initialize form with react-hook-form and Zod validation
   const form = useForm({
@@ -25,15 +26,64 @@ export function PlayerForm() {
     },
   })
 
-  // TanStack Query mutation for form submission
-  const mutation = useMutation({
+  // Populate form when selectedPlayer changes (edit mode)
+  useEffect(() => {
+    if (mode === 'update' && selectedPlayer) {
+      form.setValue('playerName', selectedPlayer.name)
+      setImagePreview(selectedPlayer.originalPhotoUrl)
+      setOriginalPhotoUrl(selectedPlayer.originalPhotoUrl)
+      setSelectedFile(null)
+    }
+  }, [selectedPlayer, mode, form])
+
+  // TanStack Query mutation for creating player
+  const createMutation = useMutation({
     mutationFn: createPlayer,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['players'] })
       toast.success('Player added successfully!')
       resetForm()
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to create player. Please try again.')
+    },
+  })
+
+  // TanStack Query mutation for updating player
+  const updateMutation = useMutation({
+    mutationFn: async ({ playerId, name, imageFile }) => {
+      let newPhotoUrl = originalPhotoUrl
+
+      // If new image selected, upload it and delete old one
+      if (imageFile) {
+        newPhotoUrl = await uploadPlayerImage(imageFile)
+
+        // Delete old image
+        if (originalPhotoUrl) {
+          try {
+            await deletePlayerImage(originalPhotoUrl)
+          } catch (error) {
+            console.warn('Failed to delete old image:', error)
+          }
+        }
+      }
+
+      // Update player document
+      return updatePlayer({
+        playerId,
+        name,
+        originalPhotoUrl: newPhotoUrl
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['players'] })
+      toast.success('Player updated successfully!')
+      if (onUpdateSuccess) {
+        onUpdateSuccess()
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update player. Please try again.')
     },
   })
 
@@ -54,8 +104,15 @@ export function PlayerForm() {
   // Handle remove image
   const handleRemoveImage = () => {
     setSelectedFile(null)
-    setImagePreview(null)
-    form.setValue('playerImage', null)
+
+    // In edit mode, revert to original photo
+    if (mode === 'update' && originalPhotoUrl) {
+      setImagePreview(originalPhotoUrl)
+      form.setValue('playerImage', null)
+    } else {
+      setImagePreview(null)
+      form.setValue('playerImage', null)
+    }
 
     // Reset file input
     const fileInput = document.getElementById('playerImage')
@@ -69,6 +126,7 @@ export function PlayerForm() {
     form.reset()
     setSelectedFile(null)
     setImagePreview(null)
+    setOriginalPhotoUrl(null)
 
     // Reset file input
     const fileInput = document.getElementById('playerImage')
@@ -77,10 +135,18 @@ export function PlayerForm() {
     }
   }
 
+  // Handle cancel in edit mode
+  const handleCancel = () => {
+    resetForm()
+    if (onCancel) {
+      onCancel()
+    }
+  }
+
   // Cleanup object URLs on unmount
   useEffect(() => {
     return () => {
-      if (imagePreview) {
+      if (imagePreview && imagePreview.startsWith('blob:')) {
         URL.revokeObjectURL(imagePreview)
       }
     }
@@ -88,16 +154,26 @@ export function PlayerForm() {
 
   // Form submit handler
   const onSubmit = async (data) => {
-    mutation.mutate({
-      name: data.playerName,
-      imageFile: selectedFile,
-    })
+    if (mode === 'add') {
+      createMutation.mutate({
+        name: data.playerName,
+        imageFile: selectedFile,
+      })
+    } else if (mode === 'update' && selectedPlayer) {
+      updateMutation.mutate({
+        playerId: selectedPlayer.id,
+        name: data.playerName,
+        imageFile: selectedFile,
+      })
+    }
   }
+
+  const isPending = createMutation.isPending || updateMutation.isPending
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Add New Player</CardTitle>
+        <CardTitle>{mode === 'add' ? 'Add New Player' : 'Update Player'}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -147,16 +223,18 @@ export function PlayerForm() {
             />
 
             {/* Image Preview */}
-            {imagePreview && selectedFile && (
+            {imagePreview && (
               <div className="space-y-2 p-4 border rounded-md">
                 <img
                   src={imagePreview}
-                  alt={`Preview of ${selectedFile.name}`}
+                  alt={selectedFile ? `Preview of ${selectedFile.name}` : 'Player image'}
                   className="w-[200px] h-[200px] object-cover rounded-md mx-auto"
                 />
-                <p className="text-sm text-center text-muted-foreground truncate">
-                  {selectedFile.name}
-                </p>
+                {selectedFile && (
+                  <p className="text-sm text-center text-muted-foreground truncate">
+                    {selectedFile.name}
+                  </p>
+                )}
                 <Button
                   type="button"
                   variant="outline"
@@ -168,15 +246,32 @@ export function PlayerForm() {
               </div>
             )}
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={mutation.isPending || !form.formState.isValid}
-              aria-busy={mutation.isPending}
-            >
-              {mutation.isPending ? 'Adding Player...' : 'Add Player'}
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              {mode === 'update' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="flex-1"
+                  disabled={isPending}
+                >
+                  Cancel
+                </Button>
+              )}
+
+              <Button
+                type="submit"
+                className={mode === 'update' ? 'flex-1' : 'w-full'}
+                disabled={isPending || !form.formState.isValid}
+                aria-busy={isPending}
+              >
+                {isPending
+                  ? mode === 'add' ? 'Adding Player...' : 'Updating Player...'
+                  : mode === 'add' ? 'Add Player' : 'Update Player'
+                }
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
