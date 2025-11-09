@@ -73,15 +73,27 @@ export async function createPlayerDocument({ name, originalPhotoUrl }) {
  */
 export async function createPlayer({ name, imageFile }) {
   try {
-    // Upload image and get download URL
-    const originalPhotoUrl = await uploadPlayerImage(imageFile);
+    // Step 1: Create player document first to get the player ID
+    const docRef = await createPlayerDocument({
+      name,
+      originalPhotoUrl: '' // Temporary empty value
+    });
 
-    // Create player document in Firestore
-    const docRef = await createPlayerDocument({ name, originalPhotoUrl });
+    const playerId = docRef.id;
+
+    // Step 2: Upload image to player-photos/{playerId} to trigger Cloud Function
+    const originalPhotoUrl = await uploadPlayerImage(imageFile, playerId, 'player-photos');
+
+    // Step 3: Update player document with the photo URL
+    await updatePlayer({
+      playerId,
+      originalPhotoUrl,
+      generationStatus: 'pending'
+    });
 
     // Return complete player data
     return {
-      id: docRef.id,
+      id: playerId,
       name,
       originalPhotoUrl,
       status: 'active',

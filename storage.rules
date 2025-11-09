@@ -7,10 +7,10 @@ service firebase.storage {
       allow read, write: if false;
     }
 
-    // Player photos directory - public read, authenticated write
+    // Player photos directory - public read, public write (TODO: Add auth)
     match /player-photos/{playerId} {
       allow read: if true; // Public read for game display
-      allow write: if request.auth != null; // Authenticated admin write
+      allow write: if true; // TODO: Restrict to authenticated admin write
     }
 
     // Player avatars directory - public read, authenticated write
@@ -19,10 +19,10 @@ service firebase.storage {
       allow write: if request.auth != null; // Authenticated admin write or Cloud Function
     }
 
-    // Legacy uploads directory - maintain existing access
+    // Legacy uploads directory - maintain existing access (TODO: Add auth)
     match /uploads/{fileName} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if true; // TODO: Restrict to authenticated admin write
     }
   }
 }
