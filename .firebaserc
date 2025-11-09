@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "holiday-pachinko"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

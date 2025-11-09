@@ -86,6 +86,7 @@ export function PlayerSidebar({ selectedPlayerId, onSelectPlayer, onPlayerDelete
       deleteMutation.mutate({
         playerId: playerToAction.id,
         imageUrl: playerToAction.originalPhotoUrl,
+        avatarUrl: playerToAction.avatarUrl,
       })
     }
   }
@@ -132,18 +133,32 @@ export function PlayerSidebar({ selectedPlayerId, onSelectPlayer, onPlayerDelete
                     ${player.status === 'inactive' ? 'opacity-50' : ''}
                   `}
                 >
-                  {/* Player Avatar */}
-                  <img
-                    src={player.originalPhotoUrl}
-                    alt={player.name}
-                    className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                  />
+                  {/* Player Avatar - use generated avatar with fallback to original */}
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={player.avatarUrl || player.originalPhotoUrl}
+                      alt={player.name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    {/* Show generating badge if status is pending */}
+                    {player.generationStatus === 'pending' && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                        <span className="text-xs text-white font-medium">...</span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Player Info */}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{player.name}</p>
                     {player.status === 'inactive' && (
                       <span className="text-xs text-muted-foreground">Inactive</span>
+                    )}
+                    {player.generationStatus === 'pending' && (
+                      <span className="text-xs text-amber-600">Generating avatar...</span>
+                    )}
+                    {player.generationStatus === 'failed' && (
+                      <span className="text-xs text-destructive">Avatar generation failed</span>
                     )}
                   </div>
 
