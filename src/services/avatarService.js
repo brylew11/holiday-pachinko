@@ -1,5 +1,4 @@
 import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore'
-import { getFunctions, httpsCallable } from 'firebase/functions'
 import { db } from '../firebase'
 
 /**
@@ -67,32 +66,26 @@ export async function updateAvatarPrompt({ geminiAvatarPrompt }) {
 
 /**
  * Triggers manual regeneration of a player's avatar
+ * Sets regenerateRequested flag in Firestore, which triggers a Cloud Function
  * @param {Object} params - Regeneration parameters
  * @param {string} params.playerId - Player document ID
- * @param {string} params.originalPhotoUrl - Player's original photo URL
- * @returns {Promise<Object>} Result from Cloud Function
+ * @returns {Promise<Object>} Success status
  */
-export async function regenerateAvatar({ playerId, originalPhotoUrl }) {
+export async function regenerateAvatar({ playerId }) {
   try {
-    const functions = getFunctions()
-    const regenerateFunction = httpsCallable(functions, 'generatePlayerAvatar')
+    const playerRef = doc(db, 'players', playerId)
 
-    const result = await regenerateFunction({
-      playerId,
-      originalPhotoUrl
+    // Set regenerateRequested flag to trigger the Firestore function
+    await updateDoc(playerRef, {
+      regenerateRequested: true
     })
 
-    return result.data
-  } catch (error) {
-    // Handle Cloud Function errors
-    if (error.code === 'functions/deadline-exceeded') {
-      throw new Error('Avatar generation timed out. Please try again.')
-    } else if (error.code === 'functions/unavailable') {
-      throw new Error('Avatar generation service is currently unavailable. Please try again later.')
-    } else if (error.message) {
-      throw new Error(`Failed to regenerate avatar: ${error.message}`)
-    } else {
-      throw new Error('Unable to regenerate avatar. Please try again.')
+    return {
+      success: true,
+      message: 'Avatar regeneration started'
     }
+  } catch (error) {
+    console.error('Regenerate avatar error:', error)
+    throw new Error('Unable to request avatar regeneration. Please try again.')
   }
 }

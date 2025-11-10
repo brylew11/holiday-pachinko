@@ -219,11 +219,31 @@ firebase deploy
 firebase deploy --only functions --force
 ```
 
+**CRITICAL: After deployment, ALWAYS verify traffic routing:**
+
+Gen2 Cloud Functions run on Cloud Run, which maintains multiple revisions. Sometimes old revisions continue serving traffic even after deployment. **You must verify and force traffic to the latest revision:**
+
+```bash
+# Check current revisions and traffic distribution
+gcloud run revisions list --service=FUNCTION_NAME --region=us-central1 --platform=managed
+
+# Force ALL traffic to the latest revision
+gcloud run services update-traffic FUNCTION_NAME --region=us-central1 --to-latest --platform=managed
+```
+
+**Example:**
+```bash
+# After deploying generatePlayerAvatar
+gcloud run revisions list --service=generateplayeravatar --region=us-central1 --platform=managed
+gcloud run services update-traffic generateplayeravatar --region=us-central1 --to-latest --platform=managed
+```
+
 **If deployment fails:**
 1. Check the error message carefully
 2. Delete function if type changed: `firebase functions:delete FUNCTION_NAME --force`
 3. Check Cloud Build logs: `gcloud builds list --limit=1`
 4. Verify IAM permissions in GCP Console
+5. **Ensure traffic is routed to latest revision** (see above)
 
 ### Deploying Frontend
 
